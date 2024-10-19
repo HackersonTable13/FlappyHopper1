@@ -7,6 +7,8 @@ from game import GameIndicator
 from settings import WIDTH, HEIGHT, pipe_size, pipe_gap, pipe_pair_sizes
 import random
 from life import Life  # Import the Life class
+from powerup import Powerup  # Import the Powerup class
+
 
 
 class World:
@@ -17,6 +19,7 @@ class World:
         self.current_x = 0
         self.gravity = 0.5
         self.current_pipe = None
+        self.powerups = pygame.sprite.Group()  # Sprite group for power-ups
         self.pipes = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
         self.lives = pygame.sprite.Group()  # Sprite group for life objects
@@ -41,6 +44,12 @@ class World:
         self.pipes.add(pipe_top)
         self.pipes.add(pipe_bottom)
         self.current_pipe = pipe_top
+        # Randomly decide whether to spawn a power-up
+        if random.randint(1, 5) == 1:  # 20% chance to spawn a power-up
+            position = random.choice([1, -1])  # Position above or below the pipe gap
+            powerup = Powerup(WIDTH, HEIGHT // 2, position)
+            self.powerups.add(powerup)
+
     # New method to spawn life objects randomly
     def _spawn_life_object(self):
         current_time = time.time()
@@ -74,41 +83,34 @@ class World:
 
     def _handle_collisions(self):
         bird = self.player.sprite
-
-        # Skip collision handling if bird is invulnerable
-        if bird.invulnerable:
-            return
         
+        # Collision with pipes or boundaries
         collision = (
-            pygame.sprite.spritecollide(
-                bird, self.pipes, False, pygame.sprite.collide_mask
-            )
+            pygame.sprite.spritecollide(bird, self.pipes, False, pygame.sprite.collide_mask)
             or bird.rect.bottom >= HEIGHT
             or bird.rect.top <= 0
         )
 
         if collision:
+            if bird.invulnerable:
+                return
             if bird.lives > 1:
                 bird.lives -= 1
-
-                # Start invulnerability period
                 bird.invulnerable = True
                 bird.invulnerable_end_time = time.time() + 2  # 2 seconds of invulnerability
-
             else:
                 self.playing = False
                 self.game_over = True
 
-        # Check for collision with life objects
-        life_collision = pygame.sprite.spritecollide(
-            bird, self.lives, True, pygame.sprite.collide_mask
-        )
+        # Collision with power-ups
+        powerup_collision = pygame.sprite.spritecollide(bird, self.powerups, True, pygame.sprite.collide_mask)
+        if powerup_collision:
+            bird.score += 1  # Increase score by 1
+
+        # Collision with life objects (if any)
+        life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
         if life_collision:
             bird.lives += 1  # Increase lives by 1
-
-        # Handle scoring
-        if bird.rect.x >= self.current_pipe.rect.centerx:
-            bird.score += 1
 
 
 
@@ -126,6 +128,9 @@ class World:
         # Update and draw life objects
         self.lives.update(self.world_shift)
         self.lives.draw(self.screen)
+        # Update and draw power-ups
+        self.powerups.update(self.world_shift)
+        self.powerups.draw(self.screen)
         # Check for scoring
         bird = self.player.sprite
         for pipe in self.pipes:
@@ -145,9 +150,11 @@ class World:
             player_event = True
         elif player_event == "restart":
             self.game_over = False
+            self.playing = False
             self.pipes.empty()
+            self.lives.empty()
+            self.powerups.empty()  # Clear power-ups
             self.player.empty()
-            self.player.score = 0
             self._generate_world()
         else:
             player_event = False
