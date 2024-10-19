@@ -11,11 +11,17 @@ class GameIndicator:
         self.inst_font = pygame.font.SysFont('Bauhaus 93', 30)
         self.color = pygame.Color("white")
         self.inst_color = pygame.Color("black")
+        self.lives_font = pygame.font.SysFont('Arial', 30)  # Font for lives
+
+    def show_lives(self, lives):
+        lives_text = f"Lives: {lives}"
+        lives_surface = self.lives_font.render(lives_text, True, self.inst_color)
+        self.screen.blit(lives_surface, (10, 10))
 
     def show_score(self, int_score):
         bird_score = str(int_score)
         score = self.font.render(bird_score, True, self.color)
-        self.screen.blit(score, (WIDTH // 2, 50))
+        self.screen.blit(score, (WIDTH // 2 - 20, 50))  # Centered score display
 
     def instructions(self):
         inst_text1 = "Press SPACE button to Jump,"

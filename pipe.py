@@ -2,7 +2,7 @@
 import pygame
 
 class Pipe(pygame.sprite.Sprite):
-    def __init__(self, pos, width, height, flip):
+    def __init__(self, pos, width, height, flip, is_bottom=False):
         super().__init__()
         self.width = width
         img_path = 'assets/terrain/pipe.png'
@@ -12,6 +12,8 @@ class Pipe(pygame.sprite.Sprite):
             flipped_image = pygame.transform.flip(self.image, False, True)
             self.image = flipped_image
         self.rect = self.image.get_rect(topleft = pos)
+        self.scored = False  # Track if the pipe has been scored
+        self.is_bottom = is_bottom  # Identify bottom pipes for scoring
 
     # update object position due to world scroll
     def update(self, x_shift):

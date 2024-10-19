@@ -1,4 +1,5 @@
 # bird.py
+import time
 import pygame
 from settings import import_sprite
 
@@ -18,6 +19,12 @@ class Bird(pygame.sprite.Sprite):
         # bird status
         self.direction = pygame.math.Vector2(0, 0)
         self.score = 0
+
+        self.lives = 1  # Initialize with 1 life
+
+        # Invulnerability attributes
+        self.invulnerable = False
+        self.invulnerable_end_time = 0
 
     # for bird's flying animation
     def _animate(self):
@@ -39,3 +46,21 @@ class Bird(pygame.sprite.Sprite):
         if is_jump:
             self._jump()
         self._animate()
+
+        # Update invulnerability status
+
+            
+        # Visual feedback for invulnerability (blinking)
+        if self.invulnerable:
+            # Check if invulnerability period has ended
+            if time.time() >= self.invulnerable_end_time:
+                self.invulnerable = False  # End invulnerability
+                # Blink the bird by toggling visibility
+            if int(time.time() * 5) % 2 == 0:
+                self.image.set_alpha(0)  # Invisible
+            else:
+                self.image.set_alpha(255)  # Visible
+        else:
+            self.image.set_alpha(255) 
+
+        self.mask = pygame.mask.from_surface(self.image)

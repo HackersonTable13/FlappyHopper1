@@ -1,13 +1,17 @@
 # world.py
+import time
 import pygame
 from pipe import Pipe
 from bird import Bird
 from game import GameIndicator
 from settings import WIDTH, HEIGHT, pipe_size, pipe_gap, pipe_pair_sizes
 import random
+from life import Life  # Import the Life class
+
 
 class World:
     def __init__(self, screen):
+        self.pipe_counter = 0  # Counter for adding life objects
         self.screen = screen
         self.world_shift = 0
         self.current_x = 0
@@ -15,22 +19,38 @@ class World:
         self.current_pipe = None
         self.pipes = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
+        self.lives = pygame.sprite.Group()  # Sprite group for life objects
+
         self._generate_world()
         self.playing = False
         self.game_over = False
-        self.passed = True
         self.game = GameIndicator(screen)
+
+        self.last_life_spawn_time = time.time()  # Track the last spawn time
+        self.life_spawn_interval = random.randint(5, 10)
 
     # adds pipe once the last pipe added reached the desired pipe horizontal spaces
     def _add_pipe(self):
         pipe_pair_size = random.choice(pipe_pair_sizes)
         top_pipe_height, bottom_pipe_height = pipe_pair_size[0] * pipe_size, pipe_pair_size[1] * pipe_size
         pipe_top = Pipe((WIDTH, 0 - (bottom_pipe_height + pipe_gap)), pipe_size, HEIGHT, True)
-        pipe_bottom = Pipe((WIDTH, top_pipe_height + pipe_gap), pipe_size, HEIGHT, False)
+
+        # Create bottom pipe (used for scoring)
+        pipe_bottom = Pipe((WIDTH, top_pipe_height + pipe_gap), pipe_size, HEIGHT, False, is_bottom=True)
+
         self.pipes.add(pipe_top)
         self.pipes.add(pipe_bottom)
         self.current_pipe = pipe_top
-
+    # New method to spawn life objects randomly
+    def _spawn_life_object(self):
+        current_time = time.time()
+        if current_time - self.last_life_spawn_time > self.life_spawn_interval:
+            life_y_pos = random.randint(50, HEIGHT - 100)
+            life = Life((WIDTH + 50, life_y_pos), 30)
+            self.lives.add(life)
+            self.last_life_spawn_time = current_time
+            self.life_spawn_interval = random.randint(5, 10)  # Reset interval
+            
     # creates the player and the obstacle
     def _generate_world(self):
         self._add_pipe()
@@ -53,19 +73,44 @@ class World:
             player.direction.y += self.gravity
             player.rect.y += player.direction.y
 
-    # handles scoring and collision
     def _handle_collisions(self):
         bird = self.player.sprite
-        # for collision checking
-        if pygame.sprite.groupcollide(self.player, self.pipes, False, False) or bird.rect.bottom >= HEIGHT or bird.rect.top <= 0:
-            self.playing = False
-            self.game_over = True
-        else:
-            # if player pass through the pipe gaps
-            bird = self.player.sprite
-            if bird.rect.x >= self.current_pipe.rect.centerx:
-                bird.score += 1
-                self.passed = True
+
+        # Skip collision handling if bird is invulnerable
+        if bird.invulnerable:
+            return
+        
+        collision = (
+            pygame.sprite.spritecollide(
+                bird, self.pipes, False, pygame.sprite.collide_mask
+            )
+            or bird.rect.bottom >= HEIGHT
+            or bird.rect.top <= 0
+        )
+
+        if collision:
+            if bird.lives > 1:
+                bird.lives -= 1
+
+                # Start invulnerability period
+                bird.invulnerable = True
+                bird.invulnerable_end_time = time.time() + 2  # 2 seconds of invulnerability
+
+            else:
+                self.playing = False
+                self.game_over = True
+
+        # Check for collision with life objects
+        life_collision = pygame.sprite.spritecollide(
+            bird, self.lives, True, pygame.sprite.collide_mask
+        )
+        if life_collision:
+            bird.lives += 1  # Increase lives by 1
+
+        # Handle scoring
+        if bird.rect.x >= self.current_pipe.rect.centerx:
+            bird.score += 1
+
 
 
                 # world.py
@@ -74,9 +119,25 @@ class World:
         # new pipe adder
         if self.current_pipe.rect.centerx  <= (WIDTH // 2) - pipe_size:
             self._add_pipe()
+        # Spawn life objects during gameplay
+        if self.playing:
+            self._spawn_life_object()
         # updates, draws pipes
         self.pipes.update(self.world_shift)
         self.pipes.draw(self.screen)
+        # Update and draw life objects
+        self.lives.update(self.world_shift)
+        self.lives.draw(self.screen)
+        # Check for scoring
+        bird = self.player.sprite
+        for pipe in self.pipes:
+            if (
+                pipe.is_bottom
+                and not pipe.scored
+                and pipe.rect.right < bird.rect.left
+            ):
+                bird.score += 1
+                pipe.scored = True
         # applying game physics
         self._apply_gravity(self.player.sprite)
         self._scroll_x()
@@ -98,3 +159,5 @@ class World:
         self.player.update(player_event)
         self.player.draw(self.screen)
         self.game.show_score(self.player.sprite.score)
+        #display lives
+        self.game.show_lives(self.player.sprite.lives)
