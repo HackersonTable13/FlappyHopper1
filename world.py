@@ -129,15 +129,12 @@ class World:
         )
         collisionWithNet = pygame.sprite.spritecollide(bird, self.bullets_group, True, pygame.sprite.collide_mask)
 
-
-
         if collisionWithNet:
             if bird.invulnerable:
                 return
 
             else:
                 bird.jump_move = -8
-
 
         if collision:
             if bird.invulnerable:
@@ -160,7 +157,7 @@ class World:
         powerup_collision = pygame.sprite.spritecollide(bird, self.powerups, True, pygame.sprite.collide_mask)
         if powerup_collision:
             bird.score += 1  # Increase score by 1
-
+        
         # Collision with life objects (if any)
         life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
         if life_collision and bird.lives < 3:
