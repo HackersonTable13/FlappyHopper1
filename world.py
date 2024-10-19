@@ -236,7 +236,7 @@ class World:
         bird = self.player.sprite
         speed = self.scroll_speed
         # Increase the speed every time the score reaches a new multiple of 10
-        if bird.score >= 10:
+        if bird.score >= 5:
             self.scroll_speed = speed
             if bird.score % 10 == 0:
                 if bird.score != self.last_speed_increase:
