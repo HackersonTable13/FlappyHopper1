@@ -5,6 +5,8 @@ from pipe import Pipe
 from bird import Bird
 from game import GameIndicator
 from settings import WIDTH, HEIGHT, pipe_size, pipe_gap, pipe_pair_sizes
+from shooter import Shooter
+from bullet import Bullet
 import random
 from life import Life  # Import the Life class
 from powerup import Powerup  # Import the Powerup class
@@ -32,6 +34,35 @@ class World:
 
         self.last_life_spawn_time = time.time()  # Track the last spawn time
         self.life_spawn_interval = random.randint(5, 10)
+
+
+        # shooter logic 
+        self.bullets_group = pygame.sprite.Group()
+        self.shooter_group = pygame.sprite.Group()
+        self.shooter_active = False
+        self.shooter_start_score = 0
+        self.last_shooter_score = -6
+
+    def _add_shooter(self):
+        shooter = Shooter(self.bullets_group, self.player.sprite)
+        self.shooter_group.add(shooter)
+        self.shooter_active = True
+        self.shooter_start_score = self.player.sprite.score
+        self.last_shooter_score = self.player.sprite.score
+
+    def _handle_shooter(self):
+        bird_score = self.player.sprite.score
+        # Check if it's time to add a shooter
+        if (bird_score % 6 == 0 and bird_score != 0 and
+            not self.shooter_active and bird_score != self.last_shooter_score):
+            self._add_shooter()
+        # Remove shooter after 5 additional points
+        if self.shooter_active and bird_score >= self.shooter_start_score + 5:
+            self.shooter_group.empty()
+            self.bullets_group.empty()
+            self.shooter_active = False
+            
+
 
     # adds pipe once the last pipe added reached the desired pipe horizontal spaces
     def _add_pipe(self):
@@ -69,6 +100,7 @@ class World:
 
 
 
+
     # for moving background/obstacle
     def _scroll_x(self):
         if self.playing:
@@ -88,13 +120,14 @@ class World:
         # Collision with pipes or boundaries
         collision = (
             pygame.sprite.spritecollide(bird, self.pipes, False, pygame.sprite.collide_mask)
+            or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
             or bird.rect.bottom >= HEIGHT
             or bird.rect.top <= 0
         )
 
         if collision:
             if bird.invulnerable:
-                return
+                return  # Ignore collisions while invulnerable
             if bird.lives > 1:
                 bird.lives -= 1
                 bird.invulnerable = True
@@ -102,6 +135,13 @@ class World:
             else:
                 self.playing = False
                 self.game_over = True
+        else:
+            # Existing scoring logic
+            if bird.rect.x >= self.current_pipe.rect.centerx and self.passed:
+                bird.score += 1
+                self.passed = False
+            if bird.rect.x < self.current_pipe.rect.centerx:
+                self.passed = True
 
         # Collision with power-ups
         powerup_collision = pygame.sprite.spritecollide(bird, self.powerups, True, pygame.sprite.collide_mask)
@@ -112,6 +152,9 @@ class World:
         life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
         if life_collision:
             bird.lives += 1  # Increase lives by 1
+
+        
+
 
 
 
@@ -157,6 +200,9 @@ class World:
             self.powerups.empty()  # Clear power-ups
             self.player.empty()
             self._generate_world()
+            self.shooter_group.empty()
+            self.bullets_group.empty()
+            self.shooter_active = False
         else:
             player_event = False
         if not self.playing:
@@ -171,6 +217,19 @@ class World:
         if self.player.sprite.score % 10 == 0 and self.player.sprite.score != 0:
             self.game.show_speed_up()
 
+
+
+        # shooter logic
+        self._handle_shooter()
+
+        # Update and draw shooter
+        if self.shooter_active:
+            self.shooter_group.update()
+            self.shooter_group.draw(self.screen)
+
+        # Update and draw bullets
+        self.bullets_group.update()
+        self.bullets_group.draw(self.screen)
 
     # Adjust speed
     def adjust_speed(self):
