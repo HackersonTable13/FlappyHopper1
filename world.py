@@ -41,7 +41,7 @@ class World:
         self.shooter_group = pygame.sprite.Group()
         self.shooter_active = False
         self.shooter_start_score = 0
-        self.last_shooter_score = -6
+        self.last_shooter_score = -20
 
     def _add_shooter(self):
         shooter = Shooter(self.bullets_group, self.player.sprite)
@@ -53,7 +53,7 @@ class World:
     def _handle_shooter(self):
         bird_score = self.player.sprite.score
         # Check if it's time to add a shooter
-        if (bird_score % 6 == 0 and bird_score != 0 and
+        if (bird_score % 20 == 0 and bird_score != 0 and
             not self.shooter_active and bird_score != self.last_shooter_score):
             self._add_shooter()
         # Remove shooter after 5 additional points
