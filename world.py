@@ -157,7 +157,14 @@ class World:
         powerup_collision = pygame.sprite.spritecollide(bird, self.powerups, True, pygame.sprite.collide_mask)
         if powerup_collision:
             bird.score += 1  # Increase score by 1
-        
+            self.power_counter += 1
+            if self.power_counter == 3:
+                self.power_counter = 0
+                bird.invulnerable = True
+                bird.invulnerable_end_time = time.time() + 4
+                self.scroll_speed *= 10
+                self.speed_boost = True
+
         # Collision with life objects (if any)
         life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
         if life_collision and bird.lives < 3:
