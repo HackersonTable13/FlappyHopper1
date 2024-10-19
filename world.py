@@ -117,7 +117,7 @@ class World:
     def _handle_collisions(self):
         bird = self.player.sprite
         
-        # Collision with pipes or boundaries
+        # Collision with pipes or boundaries or bullets
         collision = (
             pygame.sprite.spritecollide(bird, self.pipes, False, pygame.sprite.collide_mask)
             or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
