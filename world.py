@@ -138,7 +138,6 @@ class World:
         else:
             # Existing scoring logic
             if bird.rect.x >= self.current_pipe.rect.centerx and self.passed:
-                bird.score += 1
                 self.passed = False
             if bird.rect.x < self.current_pipe.rect.centerx:
                 self.passed = True
