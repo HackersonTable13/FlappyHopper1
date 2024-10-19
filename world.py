@@ -77,7 +77,7 @@ class World:
         self.pipes.add(pipe_bottom)
         self.current_pipe = pipe_top
         # Randomly decide whether to spawn a power-up
-        if random.randint(1, 5) == 1:  # 20% chance to spawn a power-up
+        if random.randint(1, 4) == 1:  # 25% chance to spawn a power-up
             position = random.choice([1, -1])  # Position above or below the pipe gap
             powerup = Powerup(WIDTH, HEIGHT // 2, position)
             self.powerups.add(powerup)
@@ -149,7 +149,7 @@ class World:
 
         # Collision with life objects (if any)
         life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
-        if life_collision:
+        if life_collision and bird.lives < 3:
             bird.lives += 1  # Increase lives by 1
 
         
