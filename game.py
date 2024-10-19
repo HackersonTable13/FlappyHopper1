@@ -40,7 +40,7 @@ class GameIndicator:
         self.screen.blit(ins, (WIDTH // 2 - 100, HEIGHT // 2 - 100))
 
     def show_menu(self):
-        menu_text = self.font.render("Flappy Bird", True, pygame.Color('black'))
+        menu_text = self.font.render("Flappy Hopper", True, pygame.Color('black'))
         start_text = pygame.font.SysFont('Arial', 30).render("Press SPACE to Start", True, pygame.Color('black'))
 
         self.screen.blit(menu_text, (self.screen.get_width() // 2 - menu_text.get_width() // 2, 150))
