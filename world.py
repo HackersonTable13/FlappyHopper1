@@ -35,6 +35,9 @@ class World:
         self.last_life_spawn_time = time.time()  # Track the last spawn time
         self.life_spawn_interval = random.randint(5, 10)
 
+        # super rabbit
+        self.power_counter = 0
+
 
         # shooter logic 
         self.bullets_group = pygame.sprite.Group()
@@ -120,10 +123,21 @@ class World:
         # Collision with pipes or boundaries or bullets
         collision = (
             pygame.sprite.spritecollide(bird, self.pipes, False, pygame.sprite.collide_mask)
-            or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
+            #or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
             or bird.rect.bottom >= HEIGHT
             or bird.rect.top <= 0
         )
+        collisionWithNet = pygame.sprite.spritecollide(bird, self.bullets_group, True, pygame.sprite.collide_mask)
+
+
+
+        if collisionWithNet:
+            if bird.invulnerable:
+                return
+
+            else:
+                bird.jump_move = -8
+
 
         if collision:
             if bird.invulnerable:
@@ -235,6 +249,11 @@ class World:
         bird = self.player.sprite
         speed = self.scroll_speed
         # Increase the speed every time the score reaches a new multiple of 10
+        if bird.speed_boost and not bird.invulnerable:
+            speed = self.original_scroll_speed  # Reset to original speed
+            bird.speed_boost = False
+            bird.invulnerable = True
+            bird.invulnerable_end_time = time.time() + 1
         if bird.score >= 5:
             self.scroll_speed = speed
             if bird.score % 10 == 0:

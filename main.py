@@ -6,8 +6,8 @@ from world import World
 pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT + ground_space))
-pygame.display.set_caption("Flappy Bird")
-
+pygame.display.set_caption("Flappy Hopper")
+ 
 class Main:
     def __init__(self, screen):
         self.screen = screen
