@@ -3,13 +3,12 @@ import time
 import pygame
 from pipe import Pipe
 from bird import Bird
-from game import GameIndicator
+from game import GameIndicator, Game
 from settings import WIDTH, HEIGHT, pipe_size, pipe_gap, pipe_pair_sizes
 from shooter import Shooter
-from bullet import Bullet
 import random
-from life import Life  # Import the Life class
-from powerup import Powerup  # Import the Powerup class
+from life import Life
+from powerup import Powerup
 
 
 
@@ -31,7 +30,7 @@ class World:
         self.playing = False
         self.game_over = False
         self.game = GameIndicator(screen)
-
+        self.game_state = Game()
         self.last_life_spawn_time = time.time()  # Track the last spawn time
         self.life_spawn_interval = random.randint(5, 10)
 
@@ -135,6 +134,7 @@ class World:
             else:
                 self.playing = False
                 self.game_over = True
+                self.game.state = "GAME_OVER"
         else:
             # Existing scoring logic
             if bird.rect.x >= self.current_pipe.rect.centerx and self.passed:
