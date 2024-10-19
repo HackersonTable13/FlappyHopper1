@@ -10,7 +10,7 @@ class Shooter(pygame.sprite.Sprite):
         img_path = 'assets/shooter/shooter.png'
         self.image = pygame.image.load(img_path).convert_alpha()
         self.rect = self.image.get_rect()
-        self.rect.topright = (WIDTH, 0)  # Position at top-right corner
+        self.rect.topright = (WIDTH, HEIGHT // 2)  # Position at top-right corner
         self.shoot_delay = 200  # Frames between shots
         self.shoot_timer = 0
         self.bullets_group = bullets_group
