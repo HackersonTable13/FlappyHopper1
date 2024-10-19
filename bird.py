@@ -1,4 +1,3 @@
-# bird.py
 import pygame
 from settings import import_sprite
 
