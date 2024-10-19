@@ -59,11 +59,10 @@ class World:
 
 
 
-        # world.py
     # for moving background/obstacle
     def _scroll_x(self):
         if self.playing:
-            self.world_shift = -6
+            self.world_shift = self.scroll_speed
         else:
             self.world_shift = 0
 
@@ -113,7 +112,6 @@ class World:
 
 
 
-                # world.py
     # updates the bird's overall state
     def update(self, player_event = None):
         # new pipe adder
@@ -161,3 +159,14 @@ class World:
         self.game.show_score(self.player.sprite.score)
         #display lives
         self.game.show_lives(self.player.sprite.lives)
+
+    # Adjust speed
+    def adjust_speed(self):
+        bird = self.player.sprite
+        # Increase the speed when score reaches multiples of 10
+        if bird.score >= 10:
+            self.scroll_speed = -7  # faster speed
+        elif bird.score >= 5:
+            self.scroll_speed = -5  # moderate speed
+        else:
+            self.scroll_speed = -3  # default speed
