@@ -9,7 +9,7 @@ class Bullet(pygame.sprite.Sprite):
         img_path = 'assets/shooter/bullet.png'
         self.image = pygame.image.load(img_path).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
-        self.speed = 8  # Adjust as needed
+        self.speed = 4  # Adjust as needed
         self.velocity = self.compute_velocity(pos, target_pos, self.speed)
 
     def compute_velocity(self, start_pos, target_pos, speed):
