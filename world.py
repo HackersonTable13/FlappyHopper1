@@ -23,7 +23,8 @@ class World:
         self.pipes = pygame.sprite.Group()
         self.player = pygame.sprite.GroupSingle()
         self.lives = pygame.sprite.Group()  # Sprite group for life objects
-
+        self.scroll_speed = -3
+        self.last_speed_increase = 0
         self._generate_world()
         self.playing = False
         self.game_over = False
@@ -167,13 +168,20 @@ class World:
         #display lives
         self.game.show_lives(self.player.sprite.lives)
 
+        if self.player.sprite.score % 10 == 0 and self.player.sprite.score != 0:
+            self.game.show_speed_up()
+
+
     # Adjust speed
     def adjust_speed(self):
         bird = self.player.sprite
-        # Increase the speed when score reaches multiples of 10
+        speed = self.scroll_speed
+        # Increase the speed every time the score reaches a new multiple of 10
         if bird.score >= 10:
-            self.scroll_speed = -7  # faster speed
-        elif bird.score >= 5:
-            self.scroll_speed = -5  # moderate speed
+            self.scroll_speed = speed
+            if bird.score % 10 == 0:
+                if bird.score != self.last_speed_increase:
+                    self.scroll_speed -= 2  # increase the speed (decrease the value)
+                    self.last_speed_increase = bird.score
         else:
-            self.scroll_speed = -3  # default speed
+            self.scroll_speed = -3  # default speed when score is below 10

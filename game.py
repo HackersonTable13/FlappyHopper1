@@ -29,3 +29,8 @@ class GameIndicator:
         ins2 = self.inst_font.render(inst_text2, True, self.inst_color)
         self.screen.blit(ins1, (95, 400))
         self.screen.blit(ins2, (70, 450))
+
+    def show_speed_up(self):
+        inst_text = "Speed Up!"
+        ins = self.inst_font.render(inst_text, True, self.inst_color)
+        self.screen.blit(ins, (WIDTH // 2 - 100, HEIGHT // 2 - 100))
