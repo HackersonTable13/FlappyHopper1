@@ -220,6 +220,8 @@ class World:
             self.shooter_group.empty()
             self.bullets_group.empty()
             self.shooter_active = False
+            self.shooter_start_score = 0
+            self.last_shooter_score = -20
         else:
             player_event = False
         if not self.playing:
