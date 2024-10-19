@@ -10,11 +10,16 @@ class GameIndicator:
         self.color = pygame.Color("white")
         self.inst_color = pygame.Color("black")
         self.lives_font = pygame.font.SysFont('Arial', 30)
+        self.lives_images = {
+            1: pygame.image.load('assets/life/1life.png'),
+            2: pygame.image.load('assets/life/2life.png'),
+            3: pygame.image.load('assets/life/3life.png')
+        }
 
     def show_lives(self, lives):
-        lives_text = f"Lives: {lives}"
-        lives_surface = self.lives_font.render(lives_text, True, self.inst_color)
-        self.screen.blit(lives_surface, (10, 10))
+        if lives in self.lives_images:
+            lives_image = self.lives_images[lives]
+            self.screen.blit(lives_image, (10, 10))
 
     def show_score(self, int_score):
         bird_score = str(int_score)

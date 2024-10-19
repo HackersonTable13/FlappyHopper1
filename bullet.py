@@ -6,10 +6,10 @@ from settings import WIDTH, HEIGHT  # Ensure WIDTH and HEIGHT are imported
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, pos, target_pos):
         super().__init__()
-        img_path = 'assets/shooter/bullet.png'
+        img_path = 'assets/shooter/net.png'
         self.image = pygame.image.load(img_path).convert_alpha()
         self.rect = self.image.get_rect(center=pos)
-        self.speed = 8  # Adjust as needed
+        self.speed = 4  # Adjust as needed
         self.velocity = self.compute_velocity(pos, target_pos, self.speed)
 
     def compute_velocity(self, start_pos, target_pos, speed):

@@ -25,6 +25,7 @@ class Bird(pygame.sprite.Sprite):
         # Invulnerability attributes
         self.invulnerable = False
         self.invulnerable_end_time = 0
+        self.speed_boost = False
 
     # for bird's flying animation
     def _animate(self):

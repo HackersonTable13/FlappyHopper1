@@ -34,13 +34,16 @@ class World:
         self.last_life_spawn_time = time.time()  # Track the last spawn time
         self.life_spawn_interval = random.randint(5, 10)
 
+        # super rabbit
+        self.power_counter = 0
+
 
         # shooter logic 
         self.bullets_group = pygame.sprite.Group()
         self.shooter_group = pygame.sprite.Group()
         self.shooter_active = False
         self.shooter_start_score = 0
-        self.last_shooter_score = -6
+        self.last_shooter_score = -20
 
     def _add_shooter(self):
         shooter = Shooter(self.bullets_group, self.player.sprite)
@@ -52,7 +55,7 @@ class World:
     def _handle_shooter(self):
         bird_score = self.player.sprite.score
         # Check if it's time to add a shooter
-        if (bird_score % 6 == 0 and bird_score != 0 and
+        if (bird_score % 20 == 0 and bird_score != 0 and
             not self.shooter_active and bird_score != self.last_shooter_score):
             self._add_shooter()
         # Remove shooter after 5 additional points
@@ -76,7 +79,7 @@ class World:
         self.pipes.add(pipe_bottom)
         self.current_pipe = pipe_top
         # Randomly decide whether to spawn a power-up
-        if random.randint(1, 5) == 1:  # 20% chance to spawn a power-up
+        if random.randint(1, 4) == 1:  # 25% chance to spawn a power-up
             position = random.choice([1, -1])  # Position above or below the pipe gap
             powerup = Powerup(WIDTH, HEIGHT // 2, position)
             self.powerups.add(powerup)
@@ -116,13 +119,21 @@ class World:
     def _handle_collisions(self):
         bird = self.player.sprite
         
-        # Collision with pipes or boundaries
+        # Collision with pipes or boundaries or bullets
         collision = (
             pygame.sprite.spritecollide(bird, self.pipes, False, pygame.sprite.collide_mask)
-            or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
+            #or pygame.sprite.spritecollide(bird, self.bullets_group, False, pygame.sprite.collide_mask)
             or bird.rect.bottom >= HEIGHT
             or bird.rect.top <= 0
         )
+        collisionWithNet = pygame.sprite.spritecollide(bird, self.bullets_group, True, pygame.sprite.collide_mask)
+
+        if collisionWithNet:
+            if bird.invulnerable:
+                return
+
+            else:
+                bird.jump_move = -8
 
         if collision:
             if bird.invulnerable:
@@ -138,7 +149,6 @@ class World:
         else:
             # Existing scoring logic
             if bird.rect.x >= self.current_pipe.rect.centerx and self.passed:
-                bird.score += 1
                 self.passed = False
             if bird.rect.x < self.current_pipe.rect.centerx:
                 self.passed = True
@@ -147,10 +157,17 @@ class World:
         powerup_collision = pygame.sprite.spritecollide(bird, self.powerups, True, pygame.sprite.collide_mask)
         if powerup_collision:
             bird.score += 1  # Increase score by 1
+            self.power_counter += 1
+            if self.power_counter == 3:
+                self.power_counter = 0
+                bird.invulnerable = True
+                bird.invulnerable_end_time = time.time() + 4
+                self.scroll_speed *= 10
+                self.speed_boost = True
 
         # Collision with life objects (if any)
         life_collision = pygame.sprite.spritecollide(bird, self.lives, True, pygame.sprite.collide_mask)
-        if life_collision:
+        if life_collision and bird.lives < 3:
             bird.lives += 1  # Increase lives by 1
 
         
@@ -236,6 +253,11 @@ class World:
         bird = self.player.sprite
         speed = self.scroll_speed
         # Increase the speed every time the score reaches a new multiple of 10
+        if bird.speed_boost and not bird.invulnerable:
+            speed = self.original_scroll_speed  # Reset to original speed
+            bird.speed_boost = False
+            bird.invulnerable = True
+            bird.invulnerable_end_time = time.time() + 1
         if bird.score >= 5:
             self.scroll_speed = speed
             if bird.score % 10 == 0:
